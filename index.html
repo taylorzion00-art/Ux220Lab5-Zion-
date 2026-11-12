@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lab 5: Custom Elements | Zion Taylor</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&family=Oswald:wght@500;700&display=swap" rel="stylesheet">
+  <style>
+    body {
+      margin: 0;
+      background-color: #f5f5f5;
+      color: #1b1b1b;
+      font-family: 'Inter', sans-serif;
+      line-height: 1.6;
+    }
+
+    h1,
+    h2 {
+      font-family: 'Oswald', sans-serif;
+    }
+
+    header {
+      background-color: #14213d;
+      color: #ffffff;
+      padding: 1rem 2rem;
+    }
+
+    header h1 {
+      margin: 0;
+      text-transform: uppercase;
+    }
+
+    main {
+      padding: 0 1rem;
+    }
+
+    footer {
+      background-color: #fca311;
+      color: #14213d;
+      text-align: center;
+      font-weight: 600;
+      padding: 1rem;
+      margin-top: 3rem;
+    }
+  </style>
+</head>
+
+<body>
+  <header>
+    <h1>Zion Taylor</h1>
+  </header>
+
+  <main>
+    <x-center>
+      <h2>Lab 5: Custom Elements</h2>
+      <p>This page uses two custom elements I made with JavaScript. <code>&lt;x-center&gt;</code> centers whatever goes inside it in a styled box, and <code>&lt;x-grade&gt;</code> turns an experience and a letter grade into a card. The cards below are the five experiences from my Looking Back assignment.</p>
+    </x-center>
+
+    <x-grade experience="High school soccer team" when="Grade 10 to 12" grade="A">Beating a playoff team that had already beaten us earlier in the season. Worth every cold practice.</x-grade>
+    <x-grade experience="Working at a bakery" when="Age 16" grade="C">Free food and taste-testing new recipes were great. The supervisor was not.</x-grade>
+    <x-grade experience="One-Armed Robber with friends" when="Earlier this year" grade="B">My friend got us caught five times in a row. We never finished, but we couldn't stop laughing.</x-grade>
+    <x-grade experience="Canada's Wonderland" when="This past summer" grade="F">Paid for things I didn't need and never got on a single ride.</x-grade>
+    <x-grade experience="Building my Roblox game" when="This fall, still going" grade="B">Debugging is rough, but seeing something I built actually work makes it worth it.</x-grade>
+
+    <x-center>
+      <h2>How it works</h2>
+      <p>Each custom element is a class that extends <code>HTMLElement</code>. When the browser finds the tag on the page, <code>connectedCallback</code> runs. It puts inline styles on the element and replaces its <code>innerHTML</code> with new markup. <code>customElements.define()</code> connects the tag name to the class. Custom element names need a dash in them, which is why these are called x-center and x-grade.</p>
+    </x-center>
+  </main>
+
+  <footer>
+    <p>&copy; 2026 Zion Taylor</p>
+  </footer>
+
+  <!-- The script goes at the bottom so the content inside each tag is already on the page when the elements build -->
+  <script>
+    // <x-center>: centers whatever is placed inside it in a white box
+    class XCenter extends HTMLElement {
+      connectedCallback() {
+        // Only build it once
+        if (this.hasRendered) return;
+        this.hasRendered = true;
+
+        // Inline style on the element itself
+        this.style.display = "block";
+        this.style.maxWidth = "700px";
+        this.style.margin = "2rem auto";
+        this.style.textAlign = "center";
+
+        // Wrap the original content in a styled box
+        this.innerHTML = `
+          <div style="background-color: #ffffff; border-top: 6px solid #fca311; border-radius: 10px; padding: 1.5rem 2rem; box-shadow: 0 2px 8px rgba(20, 33, 61, 0.1);">
+            ${this.innerHTML}
+          </div>
+        `;
+      }
+    }
+
+    customElements.define("x-center", XCenter);
+
+
+    // <x-grade>: a card for one experience with a coloured letter grade badge
+    // Use it like: <x-grade experience="Working at a bakery" when="Age 16" grade="C">Short note</x-grade>
+    const gradeColours = {
+      A: { background: "#1b7f4b", text: "#ffffff" },
+      B: { background: "#14213d", text: "#ffffff" },
+      C: { background: "#fca311", text: "#14213d" },
+      D: { background: "#e76f51", text: "#14213d" },
+      F: { background: "#b00020", text: "#ffffff" }
+    };
+
+    class XGrade extends HTMLElement {
+      connectedCallback() {
+        // Only build it once
+        if (this.hasRendered) return;
+        this.hasRendered = true;
+
+        // Read the attributes written on the tag
+        const experience = this.getAttribute("experience") || "Experience";
+        const when = this.getAttribute("when") || "";
+        const grade = (this.getAttribute("grade") || "?").toUpperCase();
+        const colours = gradeColours[grade] || { background: "#666666", text: "#ffffff" };
+        const note = this.innerHTML;
+
+        // Inline style on the element itself
+        this.style.display = "flex";
+        this.style.alignItems = "center";
+        this.style.gap = "1.25rem";
+        this.style.boxSizing = "border-box";
+        this.style.maxWidth = "700px";
+        this.style.margin = "1rem auto";
+        this.style.padding = "1rem 1.5rem";
+        this.style.backgroundColor = "#ffffff";
+        this.style.borderRadius = "10px";
+        this.style.boxShadow = "0 2px 8px rgba(20, 33, 61, 0.1)";
+
+        // Build the card: grade badge on the left, details on the right
+        this.innerHTML = `
+          <span style="flex-shrink: 0; width: 3.5rem; height: 3.5rem; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-family: 'Oswald', sans-serif; font-size: 1.8rem; font-weight: 700; background-color: ${colours.background}; color: ${colours.text};">${grade}</span>
+          <div>
+            <h3 style="margin: 0; font-family: 'Oswald', sans-serif; font-size: 1.25rem;">${experience}</h3>
+            <p style="margin: 0; font-size: 0.9rem; color: #555555;">${when}</p>
+            <p style="margin: 0.25rem 0 0;">${note}</p>
+          </div>
+        `;
+      }
+    }
+
+    customElements.define("x-grade", XGrade);
+  </script>
+</body>
+
+</html>
